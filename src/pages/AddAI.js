@@ -97,29 +97,28 @@ const TwoColumnRow = styled.div`
   }
 `;
 
-const SelectContainer = styled.div`
-  position: relative;
+// New styles for Category buttons
+const CategoryButtonsContainer = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 `;
 
-const Select = styled.select`
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 16px;
-  background: white;
+const CategoryButton = styled.button`
+  background: ${props => props.selected ? '#7c3aed' : '#e5e7eb'};
+  color: ${props => props.selected ? 'white' : '#374151'};
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 14px;
   cursor: pointer;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-  background-position: right 12px center;
-  background-repeat: no-repeat;
-  background-size: 16px;
-  
-  &:focus {
-    outline: none;
-    border-color: #7c3aed;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background: ${props => props.selected ? '#6d28d9' : '#d1d5db'};
   }
 `;
+
 
 const Textarea = styled.textarea`
   width: 100%;
@@ -191,7 +190,8 @@ function AddAI() {
     name: '',
     company: '',
     url: '',
-    category: '',
+    // Change category to an array to store multiple selections
+    category: [], 
     languages: '',
     promptExample: '',
     explanation: ''
@@ -224,6 +224,25 @@ function AddAI() {
     }));
   };
 
+  const handleCategoryToggle = (selectedCategory) => {
+    setFormData(prev => {
+      const currentCategories = prev.category;
+      if (currentCategories.includes(selectedCategory)) {
+        // If already selected, remove it
+        return {
+          ...prev,
+          category: currentCategories.filter(cat => cat !== selectedCategory)
+        };
+      } else {
+        // If not selected, add it
+        return {
+          ...prev,
+          category: [...currentCategories, selectedCategory]
+        };
+      }
+    });
+  };
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file && (file.type === 'image/png' || file.type === 'image/jpeg')) {
@@ -241,7 +260,8 @@ function AddAI() {
     return formData.name.trim() &&
            formData.company.trim() &&
            formData.url.trim() &&
-           formData.category &&
+           // Check if at least one category is selected
+           formData.category.length > 0 && 
            formData.languages.trim() &&
            formData.promptExample.trim() &&
            formData.explanation.trim() &&
@@ -261,7 +281,7 @@ function AddAI() {
       name: '',
       company: '',
       url: '',
-      category: '',
+      category: [], // Reset category to an empty array
       languages: '',
       promptExample: '',
       explanation: ''
@@ -328,20 +348,17 @@ function AddAI() {
 
             <FormSection>
               <Label>AI Category</Label>
-              <SelectContainer>
-                <Select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleInputChange}
-                >
-                  <option value="">AI의 카테고리를 선택해주세요</option>
-                  {categories.map((category, index) => (
-                    <option key={index} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </Select>
-              </SelectContainer>
+              <CategoryButtonsContainer>
+                {categories.map((category, index) => (
+                  <CategoryButton
+                    key={index}
+                    selected={formData.category.includes(category)}
+                    onClick={() => handleCategoryToggle(category)}
+                  >
+                    {category}
+                  </CategoryButton>
+                ))}
+              </CategoryButtonsContainer>
             </FormSection>
 
             <FormSection>
